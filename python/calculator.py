@@ -3,7 +3,9 @@ from sys import argv
 
 
 class Calculator():
-
+    """
+    A veeeery primitive single digit calculator
+    """
     operations = {
         '+': [lambda a, b: a + b, 1],
         '*': [lambda a, b: a * b, 2],
@@ -43,7 +45,7 @@ class InfixParser():
                 postfix += token
             else:
                 while stack and Calculator.operations[stack[-1]][1] \
-                      >= Calculator.operations[token][1]:
+                        >= Calculator.operations[token][1]:
                     postfix += stack.pop()
                 stack.append(token)
         while stack:
