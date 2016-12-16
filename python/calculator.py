@@ -4,38 +4,57 @@ from sys import argv
 
 class Calculator():
 
+    operations = {
+        '+': [lambda a, b: a + b, 1],
+        '*': [lambda a, b: a * b, 2],
+        '-': [lambda a, b: a - b, 1],
+        '/': [lambda a, b: a / b, 2],
+    }
+
     def __init__(self, expression):
         self.expression = expression
-        self.operand_stack = []
-        self.operator_stack = []
-        self.operations = {
-            '+': [lambda a, b: a + b, 2],
-            '*': [lambda a, b: a * b, 1]
-        }
+
+        self.postfix = InfixParser.parse(self.expression)
 
     def calculate(self):
-        result = 0
-        for token in self.expression:
-            if token.isdigit():
-                self.operand_stack.append(float(token))
-            elif token == "+" or token == "*":
-                if self.operator_stack and \
-                   self.operations[self.operator_stack[-1]][1]\
-                   <= self.operations[token][1]:
-                    operator = self.operator_stack.pop()
-                    right_operand = self.operand_stack.pop()
-                    left_operand = self.operand_stack.pop()
-                    result = self.operations[operator][
-                        0](left_operand, right_operand)
-                    self.operand_stack.append(result)
-                self.operator_stack.append(token)
 
-        print(result)
+        stack = []
+
+        for token in self.postfix:
+            if token.isdigit():
+                stack.append(token)
+            else:
+                left_operand = float(stack.pop())
+                right_operand = float(stack.pop())
+                stack.append(self.operations[token][0](
+                    left_operand, right_operand))
+
+        return stack.pop()
+
+
+class InfixParser():
+
+    def parse(expression):
+
+        postfix = ""
+        stack = []
+        for token in expression:
+            if token.isdigit():
+                postfix += token
+            else:
+                while stack and Calculator.operations[stack[-1]][1] \
+                      >= Calculator.operations[token][1]:
+                    postfix += stack.pop()
+                stack.append(token)
+        while stack:
+            postfix += stack.pop()
+
+        return postfix
 
 
 def main():
     c = Calculator(argv[-1])
-    c.calculate()
+    print(c.calculate())
 
 
 if __name__ == "__main__":
