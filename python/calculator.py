@@ -4,7 +4,7 @@ from sys import argv
 
 class Calculator():
     """
-    A veeeery primitive single digit calculator
+    A primitive calculator
     """
     operations = {
         '+': [lambda a, b: a + b, 1],
@@ -19,17 +19,16 @@ class Calculator():
         self.postfix = InfixParser.parse(self.expression)
 
     def calculate(self):
-
         stack = []
-
-        for token in self.postfix:
+        for token in self.postfix.split():
             if token.isdigit():
                 stack.append(token)
             else:
-                left_operand = float(stack.pop())
-                right_operand = float(stack.pop())
-                stack.append(self.operations[token][0](
-                    left_operand, right_operand))
+                if token != " ":
+                    left_operand = float(stack.pop())
+                    right_operand = float(stack.pop())
+                    stack.append(self.operations[token][0](
+                        right_operand, left_operand))
 
         return stack.pop()
 
@@ -40,17 +39,18 @@ class InfixParser():
 
         postfix = ""
         stack = []
-        for token in expression:
-            if token.isdigit():
-                postfix += token
-            else:
-                while stack and Calculator.operations[stack[-1]][1] \
-                        >= Calculator.operations[token][1]:
-                    postfix += stack.pop()
-                stack.append(token)
+        for token in expression.split():
+            for i in token:
+                if i.isdigit():
+                    postfix += i
+                else:
+                    postfix += " "
+                    while stack and Calculator.operations[stack[-1]][1] \
+                            >= Calculator.operations[i][1]:
+                        postfix += stack.pop()
+                    stack.append(i)
         while stack:
-            postfix += stack.pop()
-
+            postfix += " " + stack.pop()
         return postfix
 
 
