@@ -24,11 +24,10 @@ class Calculator():
             if token.isdigit():
                 stack.append(token)
             else:
-                if token != " ":
-                    left_operand = float(stack.pop())
-                    right_operand = float(stack.pop())
-                    stack.append(self.operations[token][0](
-                        right_operand, left_operand))
+                left_operand = float(stack.pop())
+                right_operand = float(stack.pop())
+                stack.append(self.operations[token][0](
+                    right_operand, left_operand))
 
         return stack.pop()
 
