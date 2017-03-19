@@ -5,6 +5,7 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.utils.TimeUtils;
 import com.tetromino.game.Tetromino;
 import com.tetromino.game.TetrominoGame;
@@ -13,6 +14,9 @@ import com.tetromino.game.TetrominoGame;
  * Created by andre on 3/18/17.
  */
 public class GameScreen implements Screen {
+    private static final int xScoreLabel = 400;
+    private static final int yScoreLabel = 350;
+    private static final int offsetTetromino = 350;
     private final TetrominoGame game;
     private final int[][] grid;
     private final Texture background;
@@ -21,12 +25,18 @@ public class GameScreen implements Screen {
     private long time;
     private long score;
     private int lines = 0;
+    private final BitmapFont font;
+    private boolean paused = false;
+    private final BitmapFont pauseFont;
+    private boolean gameOver = false;
 
     public GameScreen(final TetrominoGame game) {
         this.game = game;
         startTime = TimeUtils.nanoTime();
         time = 1000000000;
         score = 0;
+        font = new BitmapFont();
+        pauseFont = new BitmapFont();
         background = new Texture(Gdx.files.internal("block.png"));
         grid = new int[][]{
                 {0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
@@ -59,16 +69,23 @@ public class GameScreen implements Screen {
 
     @Override
     public void render(float delta) {
-        Gdx.gl.glClearColor(1, 0, 0, 1);
+        Gdx.gl.glClearColor(0.2f, 0.4f, 0.3f, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
         if (TimeUtils.timeSinceNanos(startTime) > time) {
-            tetromino.increaseRow();
+            if (!paused) {
+                tetromino.increaseRow();
+            }
             startTime = TimeUtils.nanoTime();
         }
 
         clearLines();
-        if (!tetrominoLanded()) {
+        gameOver();
+
+        if (!tetrominoLanded() && !paused) {
+            if (Gdx.input.isKeyJustPressed(Input.Keys.P)) {
+                paused = true;
+            }
             if (Gdx.input.isKeyJustPressed(Input.Keys.DOWN)) {
                 tetromino.increaseRow();
             }
@@ -91,24 +108,43 @@ public class GameScreen implements Screen {
                 }
             }
 
-        } else if (gameOver()) {
-            System.exit(0);
+        } else if (paused) {
+            if (Gdx.input.isKeyJustPressed(Input.Keys.P)) {
+                paused = false;
+            }
+
         } else {
             tetromino = new Tetromino();
         }
         game.batch.begin();
+        font.draw(game.batch, "Score", xScoreLabel, yScoreLabel);
+        font.draw(game.batch, String.valueOf(score), xScoreLabel, 335);
+
         renderBackground();
         renderTetromino();
         renderGrid();
+
+        float yPauseLabel = 300;
+        float xPauseLabel = 300;
+        if (paused) {
+            pauseFont.getData().setScale(2, 2);
+            if (!gameOver) {
+                pauseFont.draw(game.batch, "PAUSE", xPauseLabel, yPauseLabel);
+            }
+        }
+
+        if (gameOver) {
+            pauseFont.getData().setScale(2, 2);
+            pauseFont.draw(game.batch, "GAMEOVER", xPauseLabel, yPauseLabel);
+            paused = true;
+        }
         game.batch.end();
-        System.out.println(score);
     }
 
-    private boolean gameOver() {
+    private void gameOver() {
         if (grid[0][4] != 0 && grid[1][4] != 0 || grid[0][5] != 0 && grid[1][5] != 0 || grid[0][6] != 0 && grid[1][6] != 0) {
-            return true;
+            gameOver = true;
         }
-        return false;
     }
 
     private void renderBackground() {
@@ -116,7 +152,7 @@ public class GameScreen implements Screen {
             for (int j = 0; j < grid[i].length; j++) {
                 if (grid[i][j] == 0) {
                     game.batch.draw(
-                            background, j * -15 + 300, i * -15 + 300
+                            background, j * -15 + offsetTetromino, i * -15 + offsetTetromino
                     );
                 }
             }
@@ -124,32 +160,20 @@ public class GameScreen implements Screen {
     }
 
     private void clearLines() {
-        int count = 0;
         for (int row = 0; row < grid.length; row++) {
+            boolean isFilled = true;
             for (int col = 0; col < grid[row].length; col++) {
                 if (grid[row][col] == 0) {
-                    count = 0;
-                    break;
-                } else if (count == 10) {
-
-
-                    for (int i = 0; i < grid[row].length; i++) {
-                        grid[row][i] = 0;
-
-                    }
-                    System.out.println("clear");
-
-                    // shift array down
-                    for (int i = row; i > 0; i--) {
-                        grid[i] = grid[i - 1];
-                    }
-                    ++lines;
-
-                } else {
-                    count++;
+                    isFilled = false;
                 }
             }
-
+            if (isFilled) {
+                lines++;
+                for (int i = 0; i < grid[row].length; i++) {
+                    grid[row][i] = 0;
+                }
+                System.arraycopy(grid, 0, grid, 1, row);
+            }
         }
         if (lines == 1) {
             score += 40;
@@ -196,6 +220,8 @@ public class GameScreen implements Screen {
         tetromino.s_block.dispose();
         tetromino.z_block.dispose();
         background.dispose();
+        font.dispose();
+        pauseFont.dispose();
     }
 
     private void renderGrid() {
@@ -203,31 +229,31 @@ public class GameScreen implements Screen {
             for (int j = 0; j < grid[i].length; j++) {
                 if (grid[i][j] == 1) {
                     game.batch.draw(
-                            tetromino.i_block, j * -15 + 300, i * -15 + 300
+                            tetromino.i_block, j * -15 + offsetTetromino, i * -15 + offsetTetromino
                     );
                 } else if (grid[i][j] == 2) {
                     game.batch.draw(
-                            tetromino.o_block, j * -15 + 300, i * -15 + 300
+                            tetromino.o_block, j * -15 + offsetTetromino, i * -15 + offsetTetromino
                     );
                 } else if (grid[i][j] == 3) {
                     game.batch.draw(
-                            tetromino.t_block, j * -15 + 300, i * -15 + 300
+                            tetromino.t_block, j * -15 + offsetTetromino, i * -15 + offsetTetromino
                     );
                 } else if (grid[i][j] == 4) {
                     game.batch.draw(
-                            tetromino.j_block, j * -15 + 300, i * -15 + 300
+                            tetromino.j_block, j * -15 + offsetTetromino, i * -15 + offsetTetromino
                     );
                 } else if (grid[i][j] == 5) {
                     game.batch.draw(
-                            tetromino.l_block, j * -15 + 300, i * -15 + 300
+                            tetromino.l_block, j * -15 + offsetTetromino, i * -15 + offsetTetromino
                     );
                 } else if (grid[i][j] == 6) {
                     game.batch.draw(
-                            tetromino.s_block, j * -15 + 300, i * -15 + 300
+                            tetromino.s_block, j * -15 + offsetTetromino, i * -15 + offsetTetromino
                     );
                 } else if (grid[i][j] == 7) {
                     game.batch.draw(
-                            tetromino.z_block, j * -15 + 300, i * -15 + 300
+                            tetromino.z_block, j * -15 + offsetTetromino, i * -15 + offsetTetromino
                     );
                 }
             }
@@ -240,44 +266,44 @@ public class GameScreen implements Screen {
                 if (tetromino.getShape()[i][j] == 1) {
                     game.batch.draw(
                             tetromino.i_block,
-                            (j * -15) - (tetromino.getCol() * 15) + 300,
-                            (i * -15) - (tetromino.getRow() * 15) + 300
+                            (j * -15) - (tetromino.getCol() * 15) + offsetTetromino,
+                            (i * -15) - (tetromino.getRow() * 15) + offsetTetromino
                     );
                 } else if (tetromino.getShape()[i][j] == 2) {
                     game.batch.draw(
                             tetromino.o_block,
-                            (j * -15) - (tetromino.getCol() * 15) + 300,
-                            (i * -15) - (tetromino.getRow() * 15) + 300
+                            (j * -15) - (tetromino.getCol() * 15) + offsetTetromino,
+                            (i * -15) - (tetromino.getRow() * 15) + offsetTetromino
                     );
                 } else if (tetromino.getShape()[i][j] == 3) {
                     game.batch.draw(
                             tetromino.t_block,
-                            (j * -15) - (tetromino.getCol() * 15) + 300,
-                            (i * -15) - (tetromino.getRow() * 15) + 300
+                            (j * -15) - (tetromino.getCol() * 15) + offsetTetromino,
+                            (i * -15) - (tetromino.getRow() * 15) + offsetTetromino
                     );
                 } else if (tetromino.getShape()[i][j] == 4) {
                     game.batch.draw(
                             tetromino.j_block,
-                            (j * -15) - (tetromino.getCol() * 15) + 300,
-                            (i * -15) - (tetromino.getRow() * 15) + 300
+                            (j * -15) - (tetromino.getCol() * 15) + offsetTetromino,
+                            (i * -15) - (tetromino.getRow() * 15) + offsetTetromino
                     );
                 } else if (tetromino.getShape()[i][j] == 5) {
                     game.batch.draw(
                             tetromino.l_block,
-                            (j * -15) - (tetromino.getCol() * 15) + 300,
-                            (i * -15) - (tetromino.getRow() * 15) + 300
+                            (j * -15) - (tetromino.getCol() * 15) + offsetTetromino,
+                            (i * -15) - (tetromino.getRow() * 15) + offsetTetromino
                     );
                 } else if (tetromino.getShape()[i][j] == 6) {
                     game.batch.draw(
                             tetromino.s_block,
-                            (j * -15) - (tetromino.getCol() * 15) + 300,
-                            (i * -15) - (tetromino.getRow() * 15) + 300
+                            (j * -15) - (tetromino.getCol() * 15) + offsetTetromino,
+                            (i * -15) - (tetromino.getRow() * 15) + offsetTetromino
                     );
                 } else if (tetromino.getShape()[i][j] == 7) {
                     game.batch.draw(
                             tetromino.z_block,
-                            (j * -15) - (tetromino.getCol() * 15) + 300,
-                            (i * -15) - (tetromino.getRow() * 15) + 300
+                            (j * -15) - (tetromino.getCol() * 15) + offsetTetromino,
+                            (i * -15) - (tetromino.getRow() * 15) + offsetTetromino
                     );
                 }
             }
@@ -354,7 +380,7 @@ public class GameScreen implements Screen {
                     if (grid[row + tetromino.getRow()][col + tetromino.getCol() - 1] != 0) {
                         return false;
                     }
-                    if (col + tetromino.getCol() + 1 < 10) {
+                    if (col + tetromino.getCol() + 1 < grid[row].length) {
                         if (grid[row + tetromino.getRow()][col + tetromino.getCol() + 1] != 0) {
                             return false;
                         }

@@ -158,7 +158,7 @@ public class Tetromino {
 
         Random r = new Random();
 
-        String alphabet = "o";
+        String alphabet = "iotjlsz";
 
         for (int h = 0; h < 1; h++) {
             key = alphabet.charAt(r.nextInt(alphabet.length())) + "";
@@ -175,13 +175,6 @@ public class Tetromino {
     }
 
     public int[][] getShape() {
-        if (rotation >= tetrominos.get(key).size()) {
-            rotation = 0;
-        }
-        return tetrominos.get(key).get(rotation);
-    }
-
-    public int[][] getShapeFromRotation(int rotation) {
         if (rotation >= tetrominos.get(key).size()) {
             rotation = 0;
         }
@@ -212,7 +205,4 @@ public class Tetromino {
         return col;
     }
 
-    public int getRotation() {
-        return rotation;
-    }
 }
