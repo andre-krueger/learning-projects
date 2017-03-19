@@ -13,13 +13,14 @@ import com.tetromino.game.TetrominoGame;
  * Created by andre on 3/18/17.
  */
 public class GameScreen implements Screen {
-    final TetrominoGame game;
-    final int[][] grid;
-    Texture background;
+    private final TetrominoGame game;
+    private final int[][] grid;
+    private final Texture background;
     private Tetromino tetromino;
-    long startTime;
-    long time;
-    long score;
+    private long startTime;
+    private long time;
+    private long score;
+    private int lines = 0;
 
     public GameScreen(final TetrominoGame game) {
         this.game = game;
@@ -43,11 +44,11 @@ public class GameScreen implements Screen {
                 {0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
                 {0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
                 {0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-                {0, 0, 0, 0, 1, 0, 0, 1, 1, 1},
-                {0, 0, 0, 0, 1, 0, 0, 0, 0, 0},
-                {0, 0, 0, 1, 1, 0, 0, 0, 0, 0},
-                {1, 1, 1, 1, 1, 0, 0, 1, 1, 1},
-                {1, 1, 1, 1, 1, 0, 0, 1, 1, 1},
+                {0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+                {0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+                {0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+                {0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+                {0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
         };
         tetromino = new Tetromino();
     }
@@ -67,7 +68,6 @@ public class GameScreen implements Screen {
         }
 
         clearLines();
-
         if (!tetrominoLanded()) {
             if (Gdx.input.isKeyJustPressed(Input.Keys.DOWN)) {
                 tetromino.increaseRow();
@@ -101,6 +101,7 @@ public class GameScreen implements Screen {
         renderTetromino();
         renderGrid();
         game.batch.end();
+        System.out.println(score);
     }
 
     private boolean gameOver() {
@@ -122,27 +123,46 @@ public class GameScreen implements Screen {
         }
     }
 
-    public void clearLines() {
+    private void clearLines() {
         int count = 0;
         for (int row = 0; row < grid.length; row++) {
             for (int col = 0; col < grid[row].length; col++) {
                 if (grid[row][col] == 0) {
                     count = 0;
                     break;
-                } else {
-                    count++;
-                }
-                if (count == 10) {
+                } else if (count == 10) {
+
+
                     for (int i = 0; i < grid[row].length; i++) {
                         grid[row][i] = 0;
+
                     }
                     System.out.println("clear");
+
                     // shift array down
                     for (int i = row; i > 0; i--) {
                         grid[i] = grid[i - 1];
                     }
+                    ++lines;
+
+                } else {
+                    count++;
                 }
             }
+
+        }
+        if (lines == 1) {
+            score += 40;
+            lines = 0;
+        } else if (lines == 2) {
+            score += 100;
+            lines = 0;
+        } else if (lines == 3) {
+            score += 300;
+            lines = 0;
+        } else if (lines == 4) {
+            score += 1200;
+            lines = 0;
         }
     }
 

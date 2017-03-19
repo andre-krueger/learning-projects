@@ -12,21 +12,21 @@ import java.util.Random;
  * Created by andre on 3/18/17.
  */
 public class Tetromino {
-    final LinkedHashMap<String, List<int[][]>> tetrominos;
+    private final LinkedHashMap<String, List<int[][]>> tetrominos;
 
-    int row;
-    int col;
+    private int row;
+    private int col;
     private int rotation;
 
-    String key;
+    private String key;
 
-    public Texture i_block;
-    public Texture o_block;
-    public Texture t_block;
-    public Texture j_block;
-    public Texture l_block;
-    public Texture s_block;
-    public Texture z_block;
+    public final Texture i_block;
+    public final Texture o_block;
+    public final Texture t_block;
+    public final Texture j_block;
+    public final Texture l_block;
+    public final Texture s_block;
+    public final Texture z_block;
 
     public Tetromino() {
         row = 0;
@@ -99,6 +99,7 @@ public class Tetromino {
                 {4, 4, 0},
         });
         ArrayList<int[][]> l = new ArrayList<>();
+
         l.add(new int[][]{
                 {0, 0, 0},
                 {5, 5, 5},
@@ -215,4 +216,3 @@ public class Tetromino {
         return rotation;
     }
 }
-
