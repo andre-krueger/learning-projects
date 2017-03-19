@@ -34,11 +34,11 @@ public class GameScreen implements Screen {
                 {0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
                 {0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
                 {0, 1, 0, 0, 0, 0, 0, 0, 0, 0},
-                {0, 1, 0, 0, 0, 0, 0, 0, 0, 0},
-                {0, 1, 0, 0, 0, 1, 0, 0, 0, 0},
-                {0, 1, 0, 0, 0, 1, 1, 0, 0, 0},
-                {0, 1, 0, 0, 0, 0, 1, 1, 0, 0},
-                {0, 1, 0, 0, 0, 0, 1, 1, 0, 0},
+                {0, 1, 0, 0, 0, 0, 0, 0, 1, 0},
+                {0, 1, 0, 0, 0, 1, 0, 0, 1, 0},
+                {0, 1, 0, 0, 0, 1, 1, 0, 1, 0},
+                {0, 1, 0, 0, 0, 0, 1, 1, 1, 0},
+                {0, 1, 0, 0, 0, 0, 1, 1, 1, 0},
                 {0, 1, 0, 0, 0, 0, 1, 1, 1, 1},
                 {0, 1, 1, 1, 1, 0, 1, 1, 1, 1},
                 {1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
@@ -56,38 +56,36 @@ public class GameScreen implements Screen {
     public void render(float delta) {
         Gdx.gl.glClearColor(1, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-
         if (!tetrominoLanded()) {
             if (Gdx.input.isKeyJustPressed(Input.Keys.DOWN)) {
-                tetromino.increaseRow();
+
+                if (tetromino.canMove) {
+                    tetromino.increaseRow();
+                }
             } else if (Gdx.input.isKeyJustPressed(Input.Keys.UP)) {
                 tetromino.rotateShape();
-            } else if (Gdx.input.isKeyJustPressed(Input.Keys.LEFT)) {
-                tetrominoCollided();
-                if (!tetromino.getCanMoveRight()) {
-                    tetromino.setCanMoveRight(true);
-                }
-                if (tetromino.getCanMoveLeft()) {
+            }
+            if (Gdx.input.isKeyJustPressed(Input.Keys.LEFT)) {
+                if (canMoveLeft()) {
                     tetromino.increaseCol();
                 }
-
-            } else if (Gdx.input.isKeyJustPressed(Input.Keys.RIGHT)) {
-                tetrominoCollided();
-                if (!tetromino.getCanMoveLeft()) {
-                    tetromino.setCanMoveLeft(true);
-                }
-                if (tetromino.getCanMoveRight()) {
+            }
+            if (Gdx.input.isKeyJustPressed(Input.Keys.RIGHT)) {
+                if (canMoveRight()) {
                     tetromino.decreaseCol();
                 }
             }
         } else {
             tetromino = new Tetromino();
         }
+
         game.batch.begin();
         renderTetromino();
         renderGrid();
         game.batch.end();
+
     }
+
 
     @Override
     public void resize(int width, int height) {
@@ -143,9 +141,15 @@ public class GameScreen implements Screen {
             for (int col = 0; col < tetromino.getShape()[row].length; col++) {
                 if (tetromino.getShape()[row][col] != 0) {
                     if (grid[row + tetromino.getRow() + 1][col + tetromino.getCol()] != 0) {
+
+                        tetromino.canMove = false;
+
                         addTetrominoToGrid();
                         return true;
+                    } else {
+                        tetromino.canMove = true;
                     }
+
                 }
             }
         }
@@ -162,28 +166,35 @@ public class GameScreen implements Screen {
         }
     }
 
-    private void tetrominoCollided() {
+    private boolean canMoveRight() {
         for (int row = 0; row < tetromino.getShape().length; row++) {
             for (int col = 0; col < tetromino.getShape()[row].length; col++) {
                 if (tetromino.getShape()[row][col] != 0) {
-                    if (col + tetromino.getCol() - 1 <= 0) {
-                        tetromino.setCanMoveRight(false);
+                    if (col + tetromino.getCol() - 1 < 0) {
+                        return false;
+                    } else if (grid[row + tetromino.getRow()][col + tetromino.getCol() - 1] != 0) {
+                        return false;
                     }
-                    System.out.println(tetromino.getCol() + col);
-                    if (col + tetromino.getShape().length + tetromino.getCol()  >= grid[0].length) {
-                        tetromino.setCanMoveLeft(false);
-                    }
-                    if (grid[row + tetromino.getRow()][col + tetromino.getCol()-1] != 0) {
-                        tetromino.setCanMoveRight(false);
-                    }
-                    if (grid[row + tetromino.getRow()][col + tetromino.getCol()+1] != 0) {
-                        tetromino.setCanMoveLeft(false);
-                    }
+                }
+            }
+        }
+        return true;
+    }
 
+    private boolean canMoveLeft() {
+        for (int row = 0; row < tetromino.getShape().length; row++) {
+            for (int col = 0; col < tetromino.getShape()[row].length; col++) {
+                if (tetromino.getShape()[row][col] != 0) {
+                    if (col + tetromino.getCol() + 1 >= grid[0].length) {
+                        return false;
+                    } else if (grid[row + tetromino.getRow()][col + tetromino.getCol() + 1] != 0) {
+                        return false;
+                    }
 
                 }
             }
         }
+        return true;
     }
 }
 

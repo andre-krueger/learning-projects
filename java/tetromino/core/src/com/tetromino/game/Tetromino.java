@@ -14,25 +14,23 @@ public class Tetromino {
     int row;
     int col;
     String key;
-    private boolean canMoveLeft = true;
-    private boolean canMoveRight = true;
-
+    public boolean canMove;
     public Tetromino() {
         row = 0;
-        col = 4;
-
+        col = 5;
+    canMove = true;
         ArrayList<int[][]> i = new ArrayList<>();
         i.add(new int[][]{
                 {0, 0, 0, 0},
-                {0, 0, 0, 0},
                 {1, 1, 1, 1},
+                {0, 0, 0, 0},
                 {0, 0, 0, 0},
         });
         i.add(new int[][]{
-                {0, 1, 0, 0},
-                {0, 1, 0, 0},
-                {0, 1, 0, 0},
-                {0, 1, 0, 0},
+                {0, 0, 1, 0},
+                {0, 0, 1, 0},
+                {0, 0, 1, 0},
+                {0, 0, 1, 0},
         });
 
         ArrayList<int[][]> o = new ArrayList<>();
@@ -45,83 +43,93 @@ public class Tetromino {
 
         ArrayList<int[][]> t = new ArrayList<>();
         t.add(new int[][]{
+                {0, 0, 0},
                 {1, 1, 1},
                 {0, 1, 0},
-        });
-        t.add(new int[][]{
-                {0, 1},
-                {1, 1},
-                {0, 1}
+
         });
         t.add(new int[][]{
                 {0, 1, 0},
-                {1, 1, 1},
+                {0, 1, 1},
+                {0, 1, 0},
+
         });
         t.add(new int[][]{
-                {1, 0},
-                {1, 1},
-                {1, 0},
+                {0, 1, 0},
+                {1, 1, 1},
+                {0, 0, 0},
+        });
+        t.add(new int[][]{
+                {0, 1, 0},
+                {1, 1, 0},
+                {0, 1, 0},
         });
 
         ArrayList<int[][]> j = new ArrayList<>();
         j.add(new int[][]{
+                {0, 0, 0},
                 {1, 1, 1},
                 {0, 0, 1},
         });
         j.add(new int[][]{
-                {0, 1},
-                {0, 1},
-                {1, 1}
+                {0, 1, 1},
+                {0, 1, 0},
+                {0, 1, 0}
         });
         j.add(new int[][]{
                 {1, 0, 0},
                 {1, 1, 1},
+                {0, 0, 0}
         });
         j.add(new int[][]{
-                {1, 1},
-                {1, 0},
-                {1, 0},
+                {0, 1, 0},
+                {0, 1, 0},
+                {1, 1, 0},
         });
         ArrayList<int[][]> l = new ArrayList<>();
         l.add(new int[][]{
+                {0, 0, 0},
                 {1, 1, 1},
                 {1, 0, 0},
         });
         l.add(new int[][]{
-                {1, 1},
-                {0, 1},
-                {0, 1}
+                {0, 1, 0},
+                {0, 1, 0},
+                {0, 1, 1},
         });
         l.add(new int[][]{
                 {0, 0, 1},
                 {1, 1, 1},
+                {0, 0, 0},
         });
         l.add(new int[][]{
-                {1, 0},
-                {1, 0},
-                {1, 1},
+                {1, 1, 0},
+                {0, 1, 0},
+                {0, 1, 0},
         });
 
         ArrayList<int[][]> s = new ArrayList<>();
         s.add(new int[][]{
+                {0, 0, 0},
                 {0, 1, 1},
                 {1, 1, 0},
         });
         s.add(new int[][]{
-                {1, 0},
-                {1, 1},
-                {0, 1}
+                {0, 1, 0},
+                {0, 1, 1},
+                {0, 0, 1},
         });
 
         ArrayList<int[][]> z = new ArrayList<>();
         z.add(new int[][]{
+                {0, 0, 0},
                 {1, 1, 0},
                 {0, 1, 1},
         });
         z.add(new int[][]{
-                {0, 1},
-                {1, 1},
-                {1, 0}
+                {0, 0, 1},
+                {0, 1, 1},
+                {0, 1, 0},
         });
 
         tetrominos = new LinkedHashMap<>();
@@ -173,21 +181,6 @@ public class Tetromino {
 
     public int getCol() {
         return col;
-    }
-
-    public void setCanMoveLeft(final boolean _canMoveLeft) {
-        canMoveLeft = _canMoveLeft;
-    }
-    public void setCanMoveRight(final boolean _canMoveRight) {
-        canMoveRight = _canMoveRight;
-    }
-
-    public boolean getCanMoveRight() {
-        return canMoveRight;
-    }
-
-    public boolean getCanMoveLeft() {
-        return canMoveLeft;
     }
 }
 
