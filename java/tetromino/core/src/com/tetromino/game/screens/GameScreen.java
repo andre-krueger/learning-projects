@@ -112,7 +112,6 @@ public class GameScreen implements Screen {
             if (Gdx.input.isKeyJustPressed(Input.Keys.P)) {
                 paused = false;
             }
-
         } else {
             tetromino = new Tetromino();
         }
@@ -135,8 +134,25 @@ public class GameScreen implements Screen {
 
         if (gameOver) {
             pauseFont.getData().setScale(2, 2);
-            pauseFont.draw(game.batch, "GAMEOVER", xPauseLabel, yPauseLabel);
+            pauseFont.draw(game.batch, "GAMEOVER", xPauseLabel-100, yPauseLabel);
+            pauseFont.draw(game.batch, "PRESS ENTER TO CONTINUE", xPauseLabel-100, yPauseLabel-50);
             paused = true;
+            for (int row = 0; row < grid.length; row++) {
+                for (int col = 0; col < grid[row].length; col++) {
+                    grid[row][col] = 0;
+                }
+            }
+            for (int row = 0; row < tetromino.getShape().length; row++) {
+                for (int col = 0; col < tetromino.getShape()[row].length; col++) {
+                    tetromino.getShape()[row][col] = 0;
+                }
+            }
+            if (Gdx.input.isKeyJustPressed(Input.Keys.ENTER)) {
+                score = 0;
+                tetromino = new Tetromino();
+                gameOver = false;
+                paused = false;
+            }
         }
         game.batch.end();
     }
